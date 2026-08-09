@@ -1,59 +1,57 @@
 # AI Research Assistant
 
-A multi-source research assistant that decomposes complex questions, retrieves evidence from public research sources, and produces cited, structured summaries.
+An evidence-first multi-source research assistant built around query decomposition, provider routing, retrieval, caching, deduplication, deterministic relevance ranking, and a Streamlit research interface.
 
-## Highlights
-- Query decomposition and multi-step research workflow
-- Wikipedia and arXiv retrieval
-- Source prioritization and evidence extraction
-- Local caching to reduce repeated requests
-- Streaming responses through a lightweight UI
-- Modular architecture designed for additional sources
+## Why this project is interesting
 
-## Architecture
+Instead of treating an LLM as the whole application, the system separates the engineering concerns around a research workflow:
 
 ```text
-User Query
-   ↓
+User Question
+      ↓
 Query Planner
-   ↓
-Source Router ──→ Wikipedia
-   │
-   └────────────→ arXiv
-   ↓
-Content Extraction
-   ↓
-Evidence Ranking
-   ↓
-Answer Generation
-   ↓
-Cited Research Summary
+      ↓
+Provider Router
+   ↙        ↘
+Wikipedia   arXiv
+   ↘        ↙
+  Retrieval + Cache
+        ↓
+ Deduplication
+        ↓
+ Relevance Ranking
+        ↓
+ Structured Evidence
+        ↓
+ Streamlit UI
 ```
 
-## Tech Stack
-Python · LangGraph · LLMs · Streamlit · REST APIs · Caching
+## Features
 
-## Project structure
+- Multi-source retrieval from Wikipedia and arXiv
+- Query decomposition for compound questions
+- Provider routing based on query intent
+- Six-hour local response cache
+- Duplicate-source elimination
+- Transparent relevance scoring
+- Failure isolation between providers
+- Network timeouts
+- Structured research results
+- Unit tests for planning, ranking, and caching
+- Docker-ready deployment
 
-```text
-ai-research-assistant/
-├── app/
-│   ├── planner.py
-│   ├── retrieval.py
-│   ├── ranking.py
-│   └── pipeline.py
-├── tests/
-├── requirements.txt
-├── .gitignore
-└── README.md
-```
+## Tech stack
 
-## Running locally
+Python · Streamlit · REST APIs · XML parsing · pytest · Docker
+
+## Run locally
 
 ```bash
 python -m venv .venv
+
 # Windows
-.venv\\Scripts\\activate
+.venv\Scripts\activate
+
 # macOS/Linux
 source .venv/bin/activate
 
@@ -61,10 +59,53 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-> Configure your own model/API credentials through environment variables. Do not commit secrets.
+Open the Streamlit URL shown in the terminal.
 
-## Engineering decisions
-The system separates planning, retrieval, ranking, and generation so each stage can be tested independently and new sources can be added without rewriting the complete pipeline.
+## Test
 
-## Status
-Portfolio project — source code and integrations can be extended with additional research providers.
+```bash
+pytest -q
+```
+
+## Docker
+
+```bash
+docker build -t ai-research-assistant .
+docker run -p 8501:8501 ai-research-assistant
+```
+
+## Example questions
+
+- Compare retrieval-augmented generation with fine-tuning.
+- What are transformer architectures and their applications?
+- Research database indexing algorithms.
+- Compare CNN and LSTM approaches.
+
+## Project structure
+
+```text
+├── app.py
+├── app/
+│   ├── cache.py
+│   ├── models.py
+│   ├── planner.py
+│   ├── retrieval.py
+│   ├── ranking.py
+│   └── pipeline.py
+├── tests/
+├── docs/
+│   ├── architecture.md
+│   └── design-decisions.md
+├── Dockerfile
+├── .env.example
+├── requirements.txt
+└── README.md
+```
+
+## Engineering notes
+
+The application is deliberately modular. A future LLM synthesis component can consume the ranked evidence without changing the retrieval layer, and additional sources can be added behind the same document contract.
+
+## Important
+
+Do not commit API keys, personal credentials, or local cache files.
